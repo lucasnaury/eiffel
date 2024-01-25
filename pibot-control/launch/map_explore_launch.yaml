@@ -4,15 +4,10 @@ launch:
 - include:
     file: "$(find-pkg-share tbot_node)/launch/minimal_launch.yaml"
 
-# Load map
-
-# Movement based on the lidar data
-- node:
-    pkg: "pibot-control"
-    exec: "moveToPoint"
-    name: "moveToPoint"
-
 # Launch a SLAM algorithm
 - include:
     file: "$(find-pkg-share slam_toolbox)/launch/online_sync_launch.py"
 
+# Launch teleop
+- executable:
+    cmd: gnome-terminal --tab -e 'ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/multi/cmd_teleop'
