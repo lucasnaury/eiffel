@@ -1,10 +1,5 @@
 launch:
 
-# Load map
-# -include:
-#   file: launch nav2_bringup localization_launch.py map:=~/map.yaml autostart:=True
-- executable:
-    cmd: gnome-terminal --tab -e 'ros2 launch nav2_bringup localization_launch.py map:=$(find-pkg-share pibot-control)/config/map/map.yaml autostart:=True'
 
 # Move autonomously to a goal point
 - include:
@@ -13,10 +8,9 @@ launch:
 # Send goal poses
 - node:
     pkg: "pibot-control"
-    exec: "moveToPoint"
-    name: "moveToPoint"
+    exec: "robotLogic"
+    name: "robotLogic"
 
-# Launch a SLAM algorithm
-- include:
-    file: "$(find-pkg-share slam_toolbox)/launch/online_sync_launch.py"
-
+# Load map
+# - executable:
+#     cmd: gnome-terminal --tab -e 'ros2 launch nav2_bringup localization_launch.py map:="/home/lucas/Documents/Code/ROS_ws/eiffel/pibot-control/config/map2/map.yaml" autostart:=True'
