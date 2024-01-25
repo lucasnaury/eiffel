@@ -1,9 +1,8 @@
 launch:
 
-
 # Move autonomously to a goal point
 - include:
-  file: "$(find-pkg-share nav2_bringup)/launch/navigation_launch.py"
+    file: "$(find-pkg-share nav2_bringup)/launch/navigation_launch.py"
 
 # Send goal poses
 - node:
@@ -12,5 +11,5 @@ launch:
     name: "robotLogic"
 
 # Load map
-# - executable:
-#     cmd: gnome-terminal --tab -e 'ros2 launch nav2_bringup localization_launch.py map:="/home/lucas/Documents/Code/ROS_ws/eiffel/pibot-control/config/map2/map.yaml" autostart:=True'
+- include:
+    file: "$(find-pkg-share pibot-control)/launch/load_map.py"
