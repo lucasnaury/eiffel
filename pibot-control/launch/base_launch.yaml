@@ -1,12 +1,16 @@
 launch:
 
-# Include the robot startup script
-- include:
-    file: "$(find-pkg-share tbot_node)/launch/minimal_launch.yaml"
-
 # Load map
+# -include:
+#   file: launch nav2_bringup localization_launch.py map:=~/map.yaml autostart:=True
+- executable:
+    cmd: gnome-terminal --tab -e 'ros2 launch nav2_bringup localization_launch.py map:=$(find-pkg-share pibot-control)/config/map/map.yaml autostart:=True'
 
-# Movement based on the lidar data
+# Move autonomously to a goal point
+- include:
+  file: "$(find-pkg-share nav2_bringup)/launch/navigation_launch.py"
+
+# Send goal poses
 - node:
     pkg: "pibot-control"
     exec: "moveToPoint"
