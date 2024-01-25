@@ -1,0 +1,93 @@
+#!/usr/bin/python3
+"""Basic control of the robot, move forward and avoid obstacles. Doesn't get stuck"""
+
+# imports
+import rclpy
+import math as m
+from rclpy.node import Node
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from std_msgs.msg import String
+import time
+
+# main class
+class ReactiveMove(Node):
+    
+    def __init__(self, name="reactive_move", timerFreq = 1/60.0):
+        """ constructor """
+        super().__init__(name)  # Create the node
+
+        # Initialize parameters
+        self.declare_parameters(
+            namespace='',
+            parameters=[
+                # Position of the A point in the map
+                ('A_x', -0.062),
+                ('A_y', -2.636),
+                # Position of the B1 point in the map
+                ('B1_x', -1.709),
+                ('B1_y', 4.283),
+                # Position of the B2 point in the map
+                ('B2_x', 3.063),
+                ('B2_y', 6.170),
+                # Position next to the Ned2 robot in the map
+                ('0_x', 1.329),
+                ('0_y', -2.195),
+            ])
+
+        # Initialize subscribers
+        self.create_subscription(String, '/robot_is_full', self.robot_full_callback, 10)
+
+        # Initialize a publisher
+        self._goal_publisher = self.create_publisher(PoseStamped, 'goal_pose', 10)
+        self._initialpose_publisher = self.create_publisher(PoseWithCovarianceStamped, 'initialpose', 10)
+
+        # Initialize a clock for the publisher
+        # self.create_timer(timerFreq, self.publish_velo)
+
+        # Initialize variables
+        self._timerFreq = timerFreq
+        self._previousScanTime = None
+        self._points = []
+        self._firstPointSeen = None
+
+        # When the map is loaded, move next to the Ned2 robot
+        # x,y = self.paramDouble("0_x"), self.paramDouble("0_y")
+        # self.moveToPosition(x,y)
+
+    def robot_full_callback(self, msg):
+        # When the robot is full, move to the A point
+        x,y = self.paramDouble("A_x"), self.paramDouble("A_y")
+        self.moveToPosition(x,y)
+
+    def moveToPosition(self, x, y):
+        destination = PoseStamped()
+
+        # Create a pose that corresponds to the final destination
+        destination.pose.position.x = x
+        destination.pose.position.y = y
+
+        destination.header.frame_id = "map"
+        destination.header.stamp = self.get_clock().now().to_msg()
+
+        # Tell robot to move to the position
+        self._goal_publisher.publish(destination)
+
+    def paramDouble(self, name):
+        return self.get_parameter(name).get_parameter_value().double_value
+
+
+# Main loop
+def main():
+    """
+    Main loop
+    """
+    rclpy.init()
+    rosNode = ReactiveMove()
+    rclpy.spin(rosNode)
+
+
+    rosNode.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()

@@ -39,7 +39,7 @@ install(DIRECTORY
 
 # Python scripts
 install(PROGRAMS
-  src/moveToPoint
+  src/robotLogic
 
   DESTINATION lib/${PROJECT_NAME}
 )
