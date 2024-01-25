@@ -24,6 +24,8 @@ class Challenge1(Node):
             (ObjectShape.CIRCLE, ObjectColor.RED, 0)
         ]
 
+        self._pibot_msg = None
+
         # The pose from where the image processing happens
         self._observation_pose = PoseObject(
             x=20.0/1000, y=286.0/1000, z=302.0/1000,

@@ -24,3 +24,9 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
+
+install( PROGRAMS
+  src/challenge_1.py
+  
+  DESTINATION lib/${PROJECT_NAME}
+  )
