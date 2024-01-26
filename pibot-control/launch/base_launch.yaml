@@ -2,7 +2,7 @@ launch:
 
 # Move autonomously to a goal point
 - include:
-    file: "$(find-pkg-share nav2_bringup)/launch/navigation_launch.py"
+    file: "$(find-pkg-share pibot-control)/launch/map_mvt.py"
 
 # Send goal poses
 - node:
@@ -10,6 +10,8 @@ launch:
     exec: "robotLogic"
     name: "robotLogic"
 
-# Load map
-- include:
-    file: "$(find-pkg-share pibot-control)/launch/load_map.py"
+# Remap velocities
+- node:
+    pkg: "pibot-control"
+    exec: "remap"
+    name: "remap"

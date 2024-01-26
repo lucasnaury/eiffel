@@ -15,12 +15,11 @@ def generate_launch_description():
       PythonLaunchDescriptionSource(
                     os.path.join(
                         get_package_share_directory('nav2_bringup'),
-                        'launch/localization_launch.py')),
+                        'launch/navigation_launch.py')),
       launch_arguments={
-        'map': os.path.join(
+        'params_file': os.path.join(
                         get_package_share_directory('pibot-control'),
-                        'config/map2/map.yaml'),
-        'autostart': 'True'
-        }.items()
+                        'config/nav2_params.yaml')
+        }.items() 
     )
   ])
