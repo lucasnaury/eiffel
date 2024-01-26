@@ -6,6 +6,7 @@ import rclpy
 import math as m
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist
+from kobuki_ros_interfaces.msg import ButtonEvent
 from std_msgs.msg import String
 import time, threading
 
@@ -19,14 +20,18 @@ class RobotLogic(Node):
         # Initialize parameters
         self.point0 = [[-0.45803, -2.6858], [-0.37842, 0.92563]]
         self.pointA = [[1.9641, -1.8761], [0.37684,0.9273]]
+        self.pointB1 = [[-1.776, -4.393], [0,0]]
+        self.pointB2 = [[2.772, -6.364], [0,0]]
 
         # Initialize subscribers
         self.create_subscription(String, 'ned2', self.robot_full_callback, 10)
         self.create_subscription(Twist, 'multi/cmd_nav', self.robot_vel_callback, 10)
+        self.create_subscription(ButtonEvent, '/events/button', self.btn_callback, 10)
 
         # Initialize a publisher
         self._goal_publisher = self.create_publisher(PoseStamped, 'goal_pose', 10)
         self._initialpose_publisher = self.create_publisher(PoseWithCovarianceStamped, 'initialpose', 10)
+        self._backTo0_publisher = self.create_publisher(String, 'pibot', 10)
 
         # Initialize a clock for the publisher
         # self.create_timer(timerFreq, self.publish_velo)
@@ -37,6 +42,7 @@ class RobotLogic(Node):
         self._points = []
         self._firstPointSeen = None
         self._moving = False
+        self._challengeId = 1
 
 
         # Setup Initial pose to the A point
@@ -45,24 +51,51 @@ class RobotLogic(Node):
 
     # When the map is loaded, move next to the Ned2 robot
     def moveTo0(self):
-        print("try move back")
-        # while self._moving:
-        #     pass
-
-        self.moveToPosition(self.point0)
         print("move back")
+        self.moveToPosition(self.point0)
+
+    def moveToB1(self):
+        print("move to B1")
+        self.moveToPosition(self.pointB1)
+
+    def moveToB2(self):
+        print("move to B2")
+        self.moveToPosition(self.pointB2)
+    
+    def moveToA(self):
+        print("move to A")
+        self.moveToPosition(self.pointA)
 
     def robot_full_callback(self, msg):
 
         # Only move if not already moving
         if not self._moving:
-            print('Robot full, go to A')
-            # When the robot is full, move to the A point
-            self.moveToPosition(self.pointA)
 
-            # Wait 20s before coming back
-            timer = threading.Timer(20, self.moveTo0)
-            timer.start()
+            if self._challengeId == 1:
+
+                print('Robot full, go to A')
+
+                # When the robot is full, move to the A point
+                self.moveToA()
+
+                # Wait 20s before coming back
+                timer = threading.Timer(20, self.moveTo0)
+                timer.start()
+
+            else:
+                print('Robot full, go to B1, B2, A')
+
+                # When the robot is full, move to the B1 point
+                self.moveToB1()
+
+                # Wait before going to B2
+                timer = threading.Timer(60, self.moveToB2)
+                timer.start()
+
+                # Wait 20s before coming back
+                timer3 = threading.Timer(220, self.moveTo0)
+                timer3.start()
+
 
             self._moving = True
     
@@ -70,6 +103,21 @@ class RobotLogic(Node):
         if msg == Twist():
             print('Robot stopped')
             self._moving = False
+
+    def btn_callback(self, msg):
+        """
+        Change challenge
+        """
+        if(msg.state == msg.PRESSED):
+            if self._challengeId == 1:
+                self._challengeId = 2 
+            else:
+                self._challengeId = 1 
+
+            print(f"Challenge ID : {self._challengeId}")
+            str = String()
+            self._backTo0_publisher.publish(str) # Tell Niryo that we are back in the position
+
 
     def moveToPosition(self, point):
         # Create a pose that corresponds to the final destination
