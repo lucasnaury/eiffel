@@ -50,11 +50,18 @@ class ReactiveMove(Node):
         self._points = []
         self._firstPointSeen = None
 
+
+        # Setup Initial pose to the A point
+        initialPose = xyToPoseStamped(self.paramDouble('A_x'), self._paramDouble('A_y'))
+
+        self._initialpose_publisher.publish(initialPose)
+
         # When the map is loaded, move next to the Ned2 robot
         # x,y = self.paramDouble("0_x"), self.paramDouble("0_y")
         # self.moveToPosition(x,y)
 
     def robot_full_callback(self, msg):
+        print('Robot full, go to A')
         # When the robot is full, move to the A point
         x,y = self.paramDouble("A_x"), self.paramDouble("A_y")
         self.moveToPosition(x,y)
@@ -63,17 +70,24 @@ class ReactiveMove(Node):
         destination = PoseStamped()
 
         # Create a pose that corresponds to the final destination
-        destination.pose.position.x = x
-        destination.pose.position.y = y
-
-        destination.header.frame_id = "map"
-        destination.header.stamp = self.get_clock().now().to_msg()
+        destination = xyToPoseStamped(x,y)
 
         # Tell robot to move to the position
         self._goal_publisher.publish(destination)
 
     def paramDouble(self, name):
         return self.get_parameter(name).get_parameter_value().double_value
+
+def xyToPoseStamped(x,y):
+    pose = PoseStamped()
+    
+    pose.pose.position.x = x
+    pose.pose.position.y = y
+
+    pose.header.frame_id = "map"
+    pose.header.stamp = self.get_clock().now().to_msg()
+
+    return pose
 
 
 # Main loop
