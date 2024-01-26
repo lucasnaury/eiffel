@@ -20,7 +20,7 @@ class Challenge2(Node):
         )
 
         self._place_pose = PoseObject(
-            x=-187.0/1000, y=-189.9/1000 ,z=93.5/1000,
+            x=-187.0/1000, y=-189.9/1000 ,z=153.5/1000,
             roll=0.0, pitch=1.57, yaw=-1.57
         )
 
@@ -64,7 +64,15 @@ class Challenge2(Node):
         sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
         
-        (x, y), (width, height), angle = cv2.minAreaRect(sorted_contours[0])
+        rect = cv2.minAreaRect(sorted_contours[0])
+        (x, y), (width, height), angle  = rect
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+
+        imgSave2 = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        imgSave = cv2.drawContours(imgSave2,[box],0,(0,0,255),2)
+
+        cv2.imwrite('test.jpg', imgSave)
 
         if width > height :
             print("coucou")
