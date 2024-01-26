@@ -35,7 +35,7 @@ class ReactiveMove(Node):
             ])
 
         # Initialize subscribers
-        self.create_subscription(String, '/robot_is_full', self.robot_full_callback, 10)
+        self.create_subscription(String, '/ned2', self.robot_full_callback, 10)
 
         # Initialize a publisher
         self._goal_publisher = self.create_publisher(PoseStamped, 'goal_pose', 10)
