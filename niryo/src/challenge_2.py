@@ -6,7 +6,7 @@ import rclpy
 from rclpy.node import Node
 
 class Challenge2(Node):
-    def __init__(self, name):
+    def __init__(self, name="Challenge2"):
         super().__init__(name)
 
         # Init variables
@@ -19,12 +19,19 @@ class Challenge2(Node):
             roll=-2.5, pitch=1.5, yaw=-1.0,
         )
 
+        self._place_pose = PoseObject(
+            x=-187.0/1000, y=-189.9/1000 ,z=93.5/1000,
+            roll=0.0, pitch=1.57, yaw=-1.57
+        )
+
         self._ratio = 0.56 #mm/px
-        self._basgauche = [-141.4, 203.0, 29.7]
+        self._basgauche = [-166.4, 215.0, 27.5]
 
         self._R = 0
         self._G = 70
         self._B = 100 
+
+        # TODO : ordre : rouge, jaune, bleu, vert, petits boulons, grands boulons, pas autre chose
 
         self._robot.arm.calibrate_auto()
 
@@ -37,6 +44,8 @@ class Challenge2(Node):
         # TODO
 
     def loop(self):
+
+        #TODO : boucle for sur l'ordre des pieces
         # Getting image
         img_compressed = self._robot.vision.get_img_compressed()
         # Uncompressing image
@@ -46,30 +55,41 @@ class Challenge2(Node):
 
         image = cv2.cvtColor(img_undistort, cv2.COLOR_BGR2HSV)
         
-        low = np.array([R, 80, 40])
-        high = np.array([R+20, 255,255])
+        low = np.array([self._R, 80, 40])
+        high = np.array([self._R+20, 255,255])
 
         mask = cv2.inRange(image, low, high)
 
         contours,_ = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
-        (x, y), radius = cv2.minEnclosingCircle(sorted_contours[0])
+        
+        (x, y), (width, height), angle = cv2.minAreaRect(sorted_contours[0])
+
+        if width > height :
+            print("coucou")
+            angle = angle-90
+
+        angle = angle*np.pi/180
         
 
-        position_x = ((640-x)*ratio + basgauche[0])/1000
-        position_y = ((480-y)*ratio + basgauche[1])/1000
-        position_z = (basgauche[2]/1000) +0.1
+        position_x = (x*self._ratio + self._basgauche[0])/1000
+        position_y = ((480-y)*self._ratio + self._basgauche[1])/1000
+        position_z = (self._basgauche[2]/1000) +0.07
 
-        print(f'{position_x*1000=}, {position_y*1000=}, {position_z*1000=}')
+        print(f'{position_x*1000=}, {position_y*1000=}, {position_z*1000=}, {angle=}')
 
 
         position_objet = PoseObject(
             x=position_x, y=position_y ,z=position_z,
-            roll=-2.6, pitch=1.57, yaw=-1.57
+            roll=-2.6, pitch=1.57, yaw=angle
         )
         
         self._robot.arm.move_pose(position_objet)
+        self._robot.tool.grasp_with_tool()
+
+        self._robot.arm.move_pose(self._place_pose)
+        self._robot.tool.release_with_tool()
 
 def main():
     """
@@ -77,7 +97,7 @@ def main():
     """
     rclpy.init()
     rosNode = Challenge2()
-    rclpy.spin(rosNode)
+    rosNode.loop()
 
     rosNode.destroy_node()
     rclpy.shutdown()
