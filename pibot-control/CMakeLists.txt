@@ -40,6 +40,7 @@ install(DIRECTORY
 # Python scripts
 install(PROGRAMS
   src/robotLogic
+  src/remap
 
   DESTINATION lib/${PROJECT_NAME}
 )
