@@ -24,7 +24,7 @@ class RobotLogic(Node):
         self.pointB2 = [[2.772, -6.364], [0,0]]
 
         # Initialize subscribers
-        self.create_subscription(String, 'ned2', self.robot_full_callback, 10)
+        self.create_subscription(String, 'ned_2', self.robot_full_callback, 10)
         self.create_subscription(Twist, 'multi/cmd_nav', self.robot_vel_callback, 10)
         self.create_subscription(ButtonEvent, '/events/button', self.btn_callback, 10)
 
