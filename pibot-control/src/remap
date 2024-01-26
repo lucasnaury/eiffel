@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+
+import rclpy
+from geometry_msgs.msg import Twist
+from rclpy.node import Node
+
+class Convertor(Node):
+    def __init__(self):
+        super().__init__('vel_convertor')
+
+        self.create_subscription(Twist, '/cmd_vel_nav', self.callback, 10)
+        self.pub = self.create_publisher(Twist, '/multi/cmd_nav', 10)
+
+    def callback(self, msg):
+        self.pub.publish(msg)
+
+def main():
+    rclpy.init()
+    node = Convertor()
+    while rclpy.ok():
+        rclpy.spin_once(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+main()
