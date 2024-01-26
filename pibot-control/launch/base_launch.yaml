@@ -5,10 +5,10 @@ launch:
     file: "$(find-pkg-share pibot-control)/launch/map_mvt.py"
 
 # Send goal poses
-- node:
-    pkg: "pibot-control"
-    exec: "robotLogic"
-    name: "robotLogic"
+# - node:
+#     pkg: "pibot-control"
+#     exec: "robotLogic"
+#     name: "robotLogic"
 
 # Remap velocities
 - node:
